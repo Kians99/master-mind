@@ -27,7 +27,7 @@ def proper_col_inp?(colors)
 end
 
 def main(game_mode)
-    board = Board.new
+    board = Board.new 
     if game_mode.casecmp('codebreaker').zero?
       puts "—————————————————————————————————————————————————\nBeep Boop Bop.
 The computer has thought of the four-length hidden color code. Yellow, White, Black, 
@@ -42,28 +42,61 @@ coordinates comma seperated like:\n\"Red,Green,Blue,Orange\" (no spaces!) GoodLu
             discontinue = true
             puts "We have a winner!"
           end
+
           exac_pos = board.iden_col_and_pos(cleaned_inp)
+          code_num = board.num_colors_in_code
           col_pos = board.contain_color?(cleaned_inp)
-          
-          if exac_pos == 1
-            puts "#{exac_pos} piece is in the correct location."
+
+          avoid_col = Hash.new(0)
+          exac_pos.each do |color, num|
+            code_num.each do |col, nu|
+              if color == col && nu >= num
+                avoid_col[col] = num
+              end
+            end
+          end
+
+          p "WE COME IN PEACE"
+          p avoid_col
+
+          total = 0
+          exac_pos.each do |_, num|
+            total += num
+          end
+
+          if total == 1
+            puts "#{total} piece is in the correct location."
           elsif exac_pos != 0
-            puts "#{exac_pos} pieces are in the correct location."
+            puts "#{total} pieces are in the correct location."
+          end
+
+
+          avoid_col.each do |color, number|
+            col_pos.each do |col, num|
+              if color == col
+                col_pos.delete(color)
+              end
+            end
+          end
+
+
+          includes_total = 0
+          col_pos.each do |_, num|
+            includes_total += num
           end
           
-          only_col_match = col_pos - exac_pos
-
-          if only_col_match == 1 && cleaned_inp.uniq.size != 1
-            puts "#{only_col_match} piece is the correct color but not in the right location"
-          elsif only_col_match != 0 && cleaned_inp.uniq.size != 1
-            puts "#{only_col_match} pieces are the correct color but not in the right location"
+          
+          if includes_total == 1
+            puts "#{includes_total} piece is the correct color but not in the right location"
+          elsif includes_total != 0
+            puts "#{includes_total} pieces are the correct color but not in the right location"
           end
           
           #if already two of the same kind match so the
           #maximum number of matches then don't say the color is correct
           unless discontinue
             puts "Keep Guessing!\n—————————————————————————————————————————————————"
-          end   
+          end
         else
           puts "You did not enter a valid guess!\n—————————————————————————————————————————————————"
         end
