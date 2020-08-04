@@ -5,28 +5,38 @@ class Board
   def initialize
     @code = Array.new(0)
     4.times { @code.push(COLORS.sample) }
+    p @code
+    num_colors_in_code
   end 
 
   attr_reader :code
   
   def contain_color?(input_cols)
-    count = 0
+    num_col = Hash.new(0)
     input_cols.each do |col|
       if code.include?(col)
-        count += 1
+        num_col[col] += 1
       end
     end
-    count
+    num_col
+  end
+
+  def num_colors_in_code
+    num_col = Hash.new(0)
+    code.each do |val|
+      num_col[val] += 1
+    end
+    p num_col
   end
 
   def iden_col_and_pos(input_cols)
-    count = 0
-    for i in 0..input_cols.length - 1
+    perf_matches = Hash.new(0)
+    for i in 0..input_cols.length - 1 
       if code[i] == input_cols[i]
-        count += 1
+        perf_matches[code[i]] += 1 
       end
     end
-    count
+    perf_matches
   end
 
   def game_over?(input_cols)
