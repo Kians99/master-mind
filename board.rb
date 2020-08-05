@@ -3,9 +3,9 @@ class Board
   COLORS = %w[yellow white black brown orange red green blue].freeze
 
   def initialize
-    
-    @code = Array.new(0)
-    4.times { @code.push(COLORS.sample) }
+    @code = ["orange","orange","blue","blue"]
+    #@code = Array.new(0)
+    #4.times { @code.push(COLORS.sample) }
     num_colors_in_code
 
   end 
@@ -27,6 +27,7 @@ class Board
     code.each do |val|
       num_col[val] += 1
     end
+    num_col
   end
 
   def iden_col_and_pos(input_cols)
