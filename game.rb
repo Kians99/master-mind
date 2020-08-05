@@ -76,7 +76,6 @@ coordinates comma seperated like:\n\"Red,Green,Blue,Orange\" (no spaces!) GoodLu
             puts "#{total_of_exact} pieces are in the correct location."
           end
 
-          
 
           avoid_col.each do |color, number|
             col_pos.each do |col, num|
@@ -86,8 +85,6 @@ coordinates comma seperated like:\n\"Red,Green,Blue,Orange\" (no spaces!) GoodLu
             end
           end
 
-          
-
           exac_pos.each do |color, number|
             col_pos.each do |col, num|
               if color == col 
@@ -96,13 +93,15 @@ coordinates comma seperated like:\n\"Red,Green,Blue,Orange\" (no spaces!) GoodLu
             end
           end
 
-          #code_num.each do |color, number| 
-          #  col_pos.each do |col, num|
-          #    if color == col && num >= number
-          #      col_pos[color] = number
-          #    end
-          #  end
-         # end
+          avoid_col.each do |avoid, nu|
+            code_num.each do |color, number| 
+              col_pos.each do |col, num|
+                if color != avoid && color == col && num > number
+                  col_pos[color] = number
+                end
+              end
+            end
+          end
 
           total_corr_color = hash_sum(col_pos)
           
