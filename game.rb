@@ -26,6 +26,27 @@ def proper_col_inp?(colors)
   !colors.index(',').nil? && color_check?(colors.split(','))
 end
 
+def avoid_color(exac_pos, code_num)
+  avoid_col = Hash.new(0)
+    exac_pos.each do |color, num|
+      code_num.each do |col, nu|
+        if color == col && nu == num
+          avoid_col[col] = num
+        end
+      end
+    end
+    avoid_col
+end
+
+
+def hash_sum(hash)
+  total = 0
+  hash.each do |_, num|
+    total += num
+  end
+  total
+end
+
 def main(game_mode)
     board = Board.new 
     if game_mode.casecmp('codebreaker').zero?
@@ -46,30 +67,16 @@ coordinates comma seperated like:\n\"Red,Green,Blue,Orange\" (no spaces!) GoodLu
           exac_pos = board.iden_col_and_pos(cleaned_inp)
           code_num = board.num_colors_in_code
           col_pos = board.contain_color?(cleaned_inp)
+          avoid_col = avoid_color(exac_pos, code_num)
+          total_of_exact = hash_sum(exac_pos)
 
-          avoid_col = Hash.new(0)
-          exac_pos.each do |color, num|
-            code_num.each do |col, nu|
-              if color == col && nu >= num
-                avoid_col[col] = num
-              end
-            end
+          if total_of_exact == 1
+            puts "#{total_of_exact} piece is in the correct location."
+          elsif total_of_exact != 0
+            puts "#{total_of_exact} pieces are in the correct location."
           end
 
-          p "WE COME IN PEACE"
-          p avoid_col
-
-          total = 0
-          exac_pos.each do |_, num|
-            total += num
-          end
-
-          if total == 1
-            puts "#{total} piece is in the correct location."
-          elsif exac_pos != 0
-            puts "#{total} pieces are in the correct location."
-          end
-
+          
 
           avoid_col.each do |color, number|
             col_pos.each do |col, num|
@@ -79,21 +86,32 @@ coordinates comma seperated like:\n\"Red,Green,Blue,Orange\" (no spaces!) GoodLu
             end
           end
 
+          
 
-          includes_total = 0
-          col_pos.each do |_, num|
-            includes_total += num
+          exac_pos.each do |color, number|
+            col_pos.each do |col, num|
+              if color == col 
+                col_pos[color] = num - number
+              end
+            end
           end
+
+          #code_num.each do |color, number| 
+          #  col_pos.each do |col, num|
+          #    if color == col && num >= number
+          #      col_pos[color] = number
+          #    end
+          #  end
+         # end
+
+          total_corr_color = hash_sum(col_pos)
           
-          
-          if includes_total == 1
-            puts "#{includes_total} piece is the correct color but not in the right location"
-          elsif includes_total != 0
-            puts "#{includes_total} pieces are the correct color but not in the right location"
+          if total_corr_color == 1
+            puts "#{total_corr_color} piece is the correct color but not in the right location"
+          elsif total_corr_color != 0
+            puts "#{total_corr_color} pieces are the correct color but not in the right location"
           end
-          
-          #if already two of the same kind match so the
-          #maximum number of matches then don't say the color is correct
+
           unless discontinue
             puts "Keep Guessing!\n—————————————————————————————————————————————————"
           end
