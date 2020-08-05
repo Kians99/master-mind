@@ -47,7 +47,7 @@ def hash_sum(hash)
   total
 end
 
-def main(game_mode)
+def guess_code(game_mode)
     board = Board.new 
     if game_mode.casecmp('codebreaker').zero?
       puts "—————————————————————————————————————————————————\nBeep Boop Bop.
@@ -55,13 +55,14 @@ The computer has thought of the four-length hidden color code. Yellow, White, Bl
 Brown, Orange, Red, Green, and Blue are all options for guessing. Please enter your
 coordinates comma seperated like:\n\"Red,Green,Blue,Orange\" (no spaces!) GoodLuck!\n—————————————————————————————————————————————————"
       discontinue = false
+      turns_left = 12
       until discontinue
         raw_inp = gets.chomp
         if proper_col_inp?(raw_inp)
           cleaned_inp = lower_case(raw_inp.split(','))
           if board.game_over?(cleaned_inp)
             discontinue = true
-            puts "We have a winner!"
+            puts "We have a winner! Four pieces are in the correct location!"
           end
 
           exac_pos = board.iden_col_and_pos(cleaned_inp)
@@ -71,11 +72,10 @@ coordinates comma seperated like:\n\"Red,Green,Blue,Orange\" (no spaces!) GoodLu
           total_of_exact = hash_sum(exac_pos)
 
           if total_of_exact == 1
-            puts "#{total_of_exact} piece is in the correct location."
-          elsif total_of_exact != 0
-            puts "#{total_of_exact} pieces are in the correct location."
+            puts "#{total_of_exact} piece is in the correct location!"
+          elsif total_of_exact != 0 && !discontinue
+            puts "#{total_of_exact} pieces are in the correct location!"
           end
-
 
           avoid_col.each do |color, number|
             col_pos.each do |col, num|
@@ -91,14 +91,12 @@ coordinates comma seperated like:\n\"Red,Green,Blue,Orange\" (no spaces!) GoodLu
                 col_pos[color] = num - number
               end
             end
-          end
+           end
 
-          avoid_col.each do |avoid, nu|
-            code_num.each do |color, number| 
-              col_pos.each do |col, num|
-                if color != avoid && color == col && num > number
-                  col_pos[color] = number
-                end
+          code_num.each do |color, number| 
+            col_pos.each do |col, num|
+              if color == col && num > number
+                col_pos[color] = number
               end
             end
           end
@@ -109,6 +107,12 @@ coordinates comma seperated like:\n\"Red,Green,Blue,Orange\" (no spaces!) GoodLu
             puts "#{total_corr_color} piece is the correct color but not in the right location"
           elsif total_corr_color != 0
             puts "#{total_corr_color} pieces are the correct color but not in the right location"
+          end
+          
+          turns_left -= 1
+          if turns_left == 0
+            discontinue = true
+            puts "Game Over—You ran out of turns!"
           end
 
           unless discontinue
@@ -121,9 +125,16 @@ coordinates comma seperated like:\n\"Red,Green,Blue,Orange\" (no spaces!) GoodLu
     end
 end
 
+def make_code
+end
+
 puts 'Hello! Welcome to Mastermind. Would you like to be the codebreaker
 or the codemaker? Type "codebreaker" or "codemaker" below'
 maker_breaker = gets.chomp
 if correct_game_mode?(maker_breaker)
-  main(maker_breaker)
+  if maker_breaker == "codebreaker"
+    guess_code(maker_breaker)
+  else
+    make_code(maker_breaker)
+  end
 end
