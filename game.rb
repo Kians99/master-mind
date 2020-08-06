@@ -26,29 +26,19 @@ def proper_col_inp?(colors)
   !colors.index(',').nil? && color_check?(colors.split(','))
 end
 
-def avoid_color(exac_pos, code_num)
-  avoid_col = Hash.new(0)
-    exac_pos.each do |color, num|
-      code_num.each do |col, nu|
-        if color == col && nu == num
-          avoid_col[col] = num
-        end
-      end
-    end
-    avoid_col
-end
-
-
-def hash_sum(hash)
-  total = 0
-  hash.each do |_, num|
-    total += num
+def turns_remaining(turns_left, sec_code)
+  if turns_left == 0
+    puts "Game Over—You ran out of turns!"
+    puts "The correct code was #{sec_code}"
+    true
+  else
+    false
   end
-  total
 end
 
-def guess_code(game_mode)
-    board = Board.new 
+
+
+def guess_code(game_mode) 
     if game_mode.casecmp('codebreaker').zero?
       puts "—————————————————————————————————————————————————\nBeep Boop Bop.
 The computer has thought of the four-length hidden color code. Yellow, White, Black, 
@@ -56,6 +46,7 @@ Brown, Orange, Red, Green, and Blue are all options for guessing. Please enter y
 coordinates comma seperated like:\n\"Red,Green,Blue,Orange\" (no spaces!) GoodLuck!\n—————————————————————————————————————————————————"
       discontinue = false
       turns_left = 12
+      board = Board.new(game_mode, [])
       until discontinue
         raw_inp = gets.chomp
         if proper_col_inp?(raw_inp)
@@ -64,57 +55,12 @@ coordinates comma seperated like:\n\"Red,Green,Blue,Orange\" (no spaces!) GoodLu
             discontinue = true
             puts "We have a winner! Four pieces are in the correct location!"
           end
+          if !discontinue
+            turns_left -= 1
+            discontinue = turns_remaining(turns_left, board.code)
+            board.all_checks_for_duplicates(cleaned_inp, discontinue)
 
-          exac_pos = board.iden_col_and_pos(cleaned_inp)
-          code_num = board.num_colors_in_code
-          col_pos = board.contain_color?(cleaned_inp)
-          avoid_col = avoid_color(exac_pos, code_num)
-          total_of_exact = hash_sum(exac_pos)
-
-          if total_of_exact == 1
-            puts "#{total_of_exact} piece is in the correct location!"
-          elsif total_of_exact != 0 && !discontinue
-            puts "#{total_of_exact} pieces are in the correct location!"
           end
-
-          avoid_col.each do |color, number|
-            col_pos.each do |col, num|
-              if color == col
-                col_pos.delete(color)
-              end
-            end
-          end
-
-          exac_pos.each do |color, number|
-            col_pos.each do |col, num|
-              if color == col 
-                col_pos[color] = num - number
-              end
-            end
-           end
-
-          code_num.each do |color, number| 
-            col_pos.each do |col, num|
-              if color == col && num > number
-                col_pos[color] = number
-              end
-            end
-          end
-
-          total_corr_color = hash_sum(col_pos)
-          
-          if total_corr_color == 1
-            puts "#{total_corr_color} piece is the correct color but not in the right location"
-          elsif total_corr_color != 0
-            puts "#{total_corr_color} pieces are the correct color but not in the right location"
-          end
-          
-          turns_left -= 1
-          if turns_left == 0
-            discontinue = true
-            puts "Game Over—You ran out of turns!"
-          end
-
           unless discontinue
             puts "Keep Guessing!\n—————————————————————————————————————————————————"
           end
@@ -125,7 +71,107 @@ coordinates comma seperated like:\n\"Red,Green,Blue,Orange\" (no spaces!) GoodLu
     end
 end
 
-def make_code
+def define_code(raw_inp, game_mode)
+  if proper_col_inp?(raw_inp)
+    cleaned_inp = lower_case(raw_inp.split(','))
+    return Board.new(game_mode, cleaned_inp)
+  else
+    puts "Invalid code!"
+  end
+end
+
+def computer_guess(colors)
+  comp_guess = Array.new(0)
+  4.times { comp_guess.push(colors.sample) }
+  comp_guess
+end
+
+
+def user_makes_code(game_mode)
+  colors = %w[yellow white black brown orange red green blue]
+  if game_mode.casecmp('codemaker').zero?
+    puts "—————————————————————————————————————————————————\nPlease enter a four-length hidden code you would like the computer to guess.
+Enter your coordinates comma seperated like:\n\"Red,Green,Blue,Orange\" (no spaces!) GoodLuck!"
+    discontinue = false
+    turns_left = 12
+    raw_inp = gets.chomp
+    board = define_code(raw_inp, game_mode)
+
+    if !board.nil?
+      until discontinue
+        
+        comp_guess = computer_guess(colors)
+        puts "—————————————————————————————————————————————————\nBeep Boop Boop I predict: "
+        comp_guess.each_with_index do |color, index|
+          if index != 3
+            print "#{color},"
+          else
+            print "#{color}"
+          end
+        end
+
+        puts "\nThe number of pieces that are the correct color AND in the right location:"
+        exac_match = gets.chomp
+        puts "\nThe number of pieces that are the correct color but NOT in the right location:"
+        col_pos = gets.chomp
+
+
+
+        if exac_match != 4 && exac_match.to_i != board.correct_color_and_location(comp_guess) || col_pos.to_i != board.only_correct_color(comp_guess, discontinue)
+          puts "—————————————————————————————————————————————————\nLooks like you gave the computer the wrong directions. The correct values
+will automatically be inserted."
+        end
+        
+        exac_match = board.correct_color_and_location(comp_guess)
+        col_pos = board.only_correct_color(comp_guess, discontinue)
+
+        if exac_match != 4
+          puts "The computer got it wrong! It will guess again."
+        else
+          puts "Muhaha. Looks like ai will rule the world. COMPUTER WINS!"
+          discontinue = true
+        end          
+
+        if col_pos == 0 && exac_match == 0
+          comp_guess.each do |color|
+            colors.each do |m_col|
+              if color == m_col
+                colors.delete(color)
+              end
+            end
+          end
+        end
+
+        if exac_match == 3 || col_pos == 3
+          comp_guess.each do |color|
+            colors.each do |m_col|
+              if color == m_col
+                2.times { colors.push(color) }
+              end
+            end
+          end
+        end
+
+        if col_pos == 4
+          comp_guess.each do |color|
+            colors.each do |m_col|
+              if color != m_col
+                colors.delete(color)
+              end
+            end
+          end
+        end
+
+        turns_left -= 1
+        if turns_left == 0
+          puts "Human wins! Computer ran out of guesses."
+          discontinue = true
+        end
+      end
+
+    end
+
+  end
 end
 
 puts 'Hello! Welcome to Mastermind. Would you like to be the codebreaker
@@ -135,6 +181,6 @@ if correct_game_mode?(maker_breaker)
   if maker_breaker == "codebreaker"
     guess_code(maker_breaker)
   else
-    make_code(maker_breaker)
+    user_makes_code(maker_breaker)
   end
 end
