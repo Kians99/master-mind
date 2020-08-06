@@ -116,7 +116,6 @@ Enter your coordinates comma seperated like:\n\"Red,Green,Blue,Orange\" (no spac
         col_pos = gets.chomp
 
 
-
         if exac_match != 4 && exac_match.to_i != board.correct_color_and_location(comp_guess) || col_pos.to_i != board.only_correct_color(comp_guess, discontinue)
           puts "—————————————————————————————————————————————————\nLooks like you gave the computer the wrong directions. The correct values
 will automatically be inserted."
@@ -142,15 +141,6 @@ will automatically be inserted."
           end
         end
 
-        if exac_match == 3 || col_pos == 3
-          comp_guess.each do |color|
-            colors.each do |m_col|
-              if color == m_col
-                2.times { colors.push(color) }
-              end
-            end
-          end
-        end
 
         if col_pos == 4
           comp_guess.each do |color|
@@ -161,6 +151,8 @@ will automatically be inserted."
             end
           end
         end
+
+        p turns_left
 
         turns_left -= 1
         if turns_left == 0
