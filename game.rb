@@ -152,7 +152,7 @@ will automatically be inserted."
           end
         end
 
-        p turns_left
+
 
         turns_left -= 1
         if turns_left == 0
